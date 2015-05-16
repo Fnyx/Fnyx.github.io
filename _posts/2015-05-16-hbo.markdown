@@ -1,22 +1,172 @@
 ---
 layout: post
-title:  "Welcome to Jekyll!"
-date:   2015-03-11 16:34:37
-categories: jekyll update
+title:  "HBO Nordic series!"
+date:   2015-05-16 19:02:37
+categories: hbo series
 ---
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
 
-To add new posts, simply add a file in the `_posts` directory that follows the convention `YYYY-MM-DD-name-of-post.ext` and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+<script>
+	console.log("working");
+</script>
 
-Jekyll also offers powerful support for code snippets:
-
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
+100 Code;
+12 Monkeys;
+1992;
+30 Rock;
+7 Deadly Sins;
+Alice;
+Angels in America;
+Angry Boys;
+Arn;
+Ascension;
+Band of Brothers;
+Banshee;
+Battlestar Galactica;
+Big Love;
+Bitten;
+Black Sails;
+Boardwalk Empire;
+Bollywood Hero;
+Boomtown;
+Bored to Death;
+Borgia;
+Bosch;
+Brotherhood;
+Burning Bush;
+Californication;
+Capadocia;
+Carnivale;
+Continuum;
+Curb Your Enthusiasm;
+Dane Cook's Tourgasm;
+Dates;
+Dead Like Me;
+Deadwood;
+Den som Dræber;
+Dexter;
+Doll & Em;
+Dominion;
+Eastbound & Down;
+Empire Falls;
+Enlightened;
+Entourage;
+Epitafios;
+Extras;
+Five Days;
+Fleming - The Man Who Would Be Bond;
+Flight of the Conchords;
+Free For All;
+Friday Night Lights;
+Funny or Die Presents;
+Game of Thrones;
+Generation Kill;
+Getting On;
+Girls;
+Gomorrah;
+Gravity;
+Halt and Catch Fire;
+Happyish;
+Head Case;
+Hell on Wheels;
+Hello Ladies;
+Hijos Del Carnaval;
+Hit The Floor;
+House of Lies;
+House of Saddam;
+How to Make it in America;
+Hung;
+In Treatment;
+Ja'mie: Private School Girl;
+Jeremiah;
+Jericho;
+John Adams;
+John From Cincinnati;
+Jonah From Tonga;
+Klondike;
+Last Week Tonight with John Oliver;
+Little Britain USA;
+Looking;
+Luck;
+Lucky Louie;
+Luther;
+Magic City;
+Masters of Horror;
+Masters of Science Fiction;
+Masters of Sex;
+Mildred Pierce;
+Misfits;
+Mr. Show;
+Nurse Jackie;
+Olive Kitteridge;
+Oz;
+P. Diddy Bad Boys of Comedy;
+Painkiller Jane;
+Parks and Recreation;
+Party Down;
+Penny Dreadful;
+Polyamory;
+Power;
+Ray Donovan;
+Real Time With Bill Maher;
+Rome;
+Rosemary's Baby;
+Russell Simmons Presents Brave New Voices;
+Russell Simmons Presents Def Comedy;
+Russell Simmons Presents Def Poetry;
+Sex and The City;
+Shattered;
+Silicon Valley;
+Six Feet Under;
+Sleeper Cell;
+Southcliffe;
+Spartacus;
+Spicy City;
+Strike Back;
+Survivor's Remorse;
+Survivors;
+Swingtown;
+Tell me You Love Me;
+The 4400;
+The Affair;
+The Borgias;
+The Casual Vacancy;
+The Chris Rock Show;
+The Comeback;
+The Firm;
+The Honourable Woman;
+The Jinx: The Life and Deaths of Robert Durst;
+The Knick;
+The L Word;
+The Leftovers;
+The Newsroom;
+The Office;
+The Office (US);
+The Pacific;
+The Passion;
+The Real L Word;
+The Red Road;
+The Ricky Gervais Show;
+The Shadow Line;
+The Sopranos;
+The Walking Dead;
+The White Queen;
+The Whitest Kids U' Know;
+The Wire;
+The Wire (Re-mastered);
+Time of Death;
+Todd McFarlane's Spawn;
+Togetherness;
+Top of the Lake;
+Treme;
+True Blood;
+True Detective;
+Turn;
+Twin Peaks;
+Varg Veum;
+Veep;
+Vice;
+Vikings;
+Warehouse 13
 
 Check out the [Jekyll docs][jekyll] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll’s dedicated Help repository][jekyll-help].
 
