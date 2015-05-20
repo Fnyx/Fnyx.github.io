@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "HBO Nordic series!"
-date:   2015-05-19 17:09:37
+date:   2015-05-20 20:09:37
 categories: hbo series
 ---
 
@@ -51,57 +51,84 @@ function eraseCookie(name) {
     };
 
     checkReady(function(jQuery) {
-	var series = "100 Code;12 Monkeys;1992;30 Rock;7 Deadly Sins;Alice;Angels in America;Angry Boys;Arn;Ascension;Band of Brothers;Banshee;Battlestar Galactica;Big Love;Bitten;Black Sails;Boardwalk Empire;Bollywood Hero;Boomtown;Bored to Death;Borgia;Bosch;Brotherhood;Burning Bush;Californication;Capadocia;Carnivale;Continuum;Curb Your Enthusiasm;Dane Cook's Tourgasm;Dates;Dead Like Me;Deadwood;Den som Dræber;Dexter;Doll & Em;Dominion;Eastbound & Down;Empire Falls;Enlightened;Entourage;Epitafios;Extras;Five Days;Fleming - The Man Who Would Be Bond;Flight of the Conchords;Free For All;Friday Night Lights;Funny or Die Presents;Game of Thrones;Generation Kill;Getting On;Girls;Gomorrah;Gravity;Halt and Catch Fire;Happyish;Head Case;Hell on Wheels;Hello Ladies;Hijos Del Carnaval;Hit The Floor;House of Lies;House of Saddam;How to Make it in America;Hung;In Treatment;Ja'mie: Private School Girl;Jeremiah;Jericho;John Adams;John From Cincinnati;Jonah From Tonga;Klondike;Last Week Tonight with John Oliver;Little Britain USA;Looking;Luck;Lucky Louie;Luther;Magic City;Masters of Horror;Masters of Science Fiction;Masters of Sex;Mildred Pierce;Misfits;Mr. Show;Nurse Jackie;Olive Kitteridge;Oz;P. Diddy Bad Boys of Comedy;Painkiller Jane;Parks and Recreation;Party Down;Penny Dreadful;Polyamory;Power;Ray Donovan;Real Time With Bill Maher;Rome;Rosemary's Baby;Russell Simmons Presents Brave New Voices;Russell Simmons Presents Def Comedy;Russell Simmons Presents Def Poetry;Sex and The City;Shattered;Silicon Valley;Six Feet Under;Sleeper Cell;Southcliffe;Spartacus;Spicy City;Strike Back;Survivor's Remorse;Survivors;Swingtown;Tell me You Love Me;The 4400;The Affair;The Borgias;The Casual Vacancy;The Chris Rock Show;The Comeback;The Firm;The Honourable Woman;The Jinx: The Life and Deaths of Robert Durst;The Knick;The L Word;The Leftovers;The Newsroom;The Office;The Office (US);The Pacific;The Passion;The Real L Word;The Red Road;The Ricky Gervais Show;The Shadow Line;The Sopranos;The Walking Dead;The White Queen;The Whitest Kids U' Know;The Wire;The Wire (Re-mastered);Time of Death;Todd McFarlane's Spawn;Togetherness;Top of the Lake;Treme;True Blood;True Detective;Turn;Twin Peaks;Varg Veum;Veep;Vice;Vikings;Warehouse 13";
-	var series_array = series.split(";");
 	var seen = readCookie("seen");
-	if(seen==null)seen="";	
+	if(seen==null)seen="";
+	var rating = readCookie("rating");
+	var series_array = [];
 
-	for(var i = 0; i < series_array.length; i++){
-	   if(seen.search(series_array[i]) == -1){
-	      jQuery("#hbotable").append('<tr><td class="hbotitle">'+series_array[i]+'</td><td class="imdbrating"></td><td class="seen">seen</td></tr>');	
-	   }
+	if(rating == null || rating == ""){
+	   refresh();
+	} else {
+	    var series_tuples = rating.split(";");
+	    for(var i = 0; i < series_tuples.length; i++){
+		var tuple = series_tuples[i].split("=");
+	        series_array[tuple[0]] = tuple[1];
+	    }
+	    create_table(series_array);
+	    sorter();
 	}
 
-	jQuery(".seen").click(function(){
-	    seen += jQuery(this).parent().find('.hbotitle').html() + ";";
-	    eraseCookie("seen");
-	    createCookie("seen",seen,365);
-	    jQuery(this).parent().remove();
-	});
+	function refresh(){
+		jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
+		    var series_array = [];
+		    $(data).find("item").each(function () {
+			var el = $(this);
+			var title = el.find("title").text();
+			var guid = el.find("guid").text();
 
-        var $title = jQuery('.hbotitle');
-        var i = 0;
-        $title.each(function(){
-            var $this = jQuery(this);
-            var data = {
-                't':$this.html().trim().replace("&amp;", "&"),
-                'plot':'short',
-		'type':'series',
-                'r':'json'
-            }
-            jQuery.get('http://www.omdbapi.com/',
-                       data,
-                       function(response){
-                           var rating = 0;
-                           if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
-                              rating = response.imdbRating;   
-                           }
-                           if(rating != 0){
-                              $this.parent().find('.imdbrating').html(rating);
-                           }
-                           $this.parent().attr('data-rating',rating).addClass("toBeSorted");
-                           i++;
-                           if(i == $title.length){
-                              sorter();
-                           }
-                       },
-                       'json');
-        });
+			series_array[title] = null;
+		    });
+		    create_table(series_array);
+		    hboloaded();
+		});
+	}
+
+	function create_table(series_array){
+		for(var title in series_array){
+		   if(seen.search(title) == -1){
+		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((series_array[title]!=null)?' data-rating="'+series_array[title]+'"':'')+'><td class="hbotitle">'+title+'</td><td class="imdbrating">'+((series_array[title]!=null)?series_array[title]:'')+'</td><td class="seen" style="cursor:pointer">seen</td></tr>');	
+		   }
+		}
+	}
+
+
+	function hboloaded(){
+		var $title = jQuery('.hbotitle');
+		var i = 0;
+		$title.each(function(){
+		    var $this = jQuery(this);
+		    var data = {
+		        't':$this.html().trim().replace("&amp;", "&"),
+		        'plot':'short',
+			'type':'series',
+		        'r':'json'
+		    }
+		    jQuery.get('http://www.omdbapi.com/',
+		               data,
+		               function(response){
+		                   var rating = 0;
+		                   if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
+		                      rating = response.imdbRating;   
+		                   }
+		                   if(rating != 0){
+		                      $this.parent().find('.imdbrating').html(rating);
+		                   }
+		                   $this.parent().attr('data-rating',rating).addClass("toBeSorted");
+		                   i++;
+		                   if(i == $title.length){
+		                      sorter();
+		                   }
+		               },
+		               'json');
+		});
+	}
+
         function sorter(){
 	    jQuery("#sortimdb").click(function(){
 	        jQuery("#hbotable").find(".toBeSorted").sort(function(a,b){
                     return b.dataset.rating - a.dataset.rating; 
                 }).appendTo("#hbotable");
+		make_zebra();
 	    });
 	    jQuery("#sortname").click(function(){
 	        jQuery("#hbotable").find(".hbotitle").parent().sort(function(a,b){
@@ -115,16 +142,51 @@ function eraseCookie(name) {
 		        return 0;
 		    }
                 }).appendTo("#hbotable");
+		make_zebra();
 	    });
+
+	    jQuery(".seen").click(function(){
+	        seen += jQuery(this).parent().find('.hbotitle').html() + ";";
+	        if(readCookie("seen")!=null)eraseCookie("seen");
+	        createCookie("seen",seen,365);
+	        jQuery(this).parent().remove();
+		make_zebra();
+	    });
+
+	    jQuery("#refresh").click(function(){
+		jQuery(".toBeSorted").remove();
+		refresh();
+		return false;
+	    });
+
+	    var data = "";
+	    jQuery("#hbotable").find("tr").each(function(){
+		var $this = jQuery(this);
+		var title = $this.find(".hbotitle").text();
+		var rating = $this.attr("data-rating");
+		data += title+"="+rating+";";
+	    });
+
+	    make_zebra();
+
+	    if(readCookie("rating")!=null)eraseCookie("rating");
+	    createCookie("rating",data,365);
         };
+
+	function make_zebra(){
+	  $("tr").attr("style","");
+	  $("tr:odd").attr("style","background:#ccc");
+	}
     });
 })();
 </script>
 
-<table id="hbotable" style="width:100%">
+<button id="refresh">refresh</button>
+
+<table id="hbotable" style="width:100%;margin-bottom:100px">
   <tr>
-    <td id="sortname">Series</td>
-    <td id="sortimdb">Imdb</td>
+    <td id="sortname" style="cursor:pointer">Series</td>
+    <td id="sortimdb" style="cursor:pointer">Imdb</td>
     <td></td>
   </tr>
 </table>
