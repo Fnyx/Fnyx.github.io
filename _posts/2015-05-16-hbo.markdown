@@ -6,41 +6,7 @@ categories: hbo series
 ---
 
 <script>
-
-function createCookie(name, value, days) {
-    var expires;
-
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toGMTString();
-    } else {
-        expires = "";
-    }
-    document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
-
-function readCookie(name) {
-    var nameEQ = encodeURIComponent(name) + "=";
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-    }
-    return null;
-}
-
-function eraseCookie(name) {
-    createCookie(name, "", -1);
-}
-
 (function() {
-    var script = document.createElement("SCRIPT");
-    script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js';
-    script.type = 'text/javascript';
-    document.getElementsByTagName("head")[0].appendChild(script);
-
     var checkReady = function(callback) {
         if (window.jQuery) {
             callback(jQuery);
@@ -51,32 +17,28 @@ function eraseCookie(name) {
     };
 
     checkReady(function(jQuery) {
-	var seen = readCookie("seen");
+	var seen = localStorage.seen;
 	if(seen==null)seen="";
-	var rating = readCookie("rating");
+	var rating = localStorage.rating;
 	var series_array = [];
 
 	if(rating == null || rating == ""){
 	   refresh();
 	} else {
-	    var series_tuples = rating.split(";");
-	    for(var i = 0; i < series_tuples.length; i++){
-		var tuple = series_tuples[i].split("=");
-	        series_array[tuple[0]] = tuple[1];
-	    }
+	    series_array = JSON.parse(rating);
 	    create_table(series_array);
 	    sorter();
 	}
 
 	function refresh(){
 		jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
-		    var series_array = [];
+		    var series_array = {};
 		    $(data).find("item").each(function () {
 			var el = $(this);
 			var title = el.find("title").text();
 			var guid = el.find("guid").text();
 
-			series_array[title] = null;
+			series_array[title] = {"rating":null,"guid":guid};
 		    });
 		    create_table(series_array);
 		    hboloaded();
@@ -85,8 +47,10 @@ function eraseCookie(name) {
 
 	function create_table(series_array){
 		for(var title in series_array){
-		   if(seen.search(title) == -1){
-		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((series_array[title]!=null)?' data-rating="'+series_array[title]+'"':'')+'><td class="hbotitle">'+title+'</td><td class="imdbrating">'+((series_array[title]!=null)?series_array[title]:'')+'</td><td class="seen" style="cursor:pointer">seen</td></tr>');	
+		   if(seen.search(title+";") == -1){
+		      var imdb = series_array[title]["rating"];
+		      var guid = series_array[title]["guid"];
+		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td><td class="seen" style="cursor:pointer">seen</td></tr>');	
 		   }
 		}
 	}
@@ -108,12 +72,12 @@ function eraseCookie(name) {
 		               function(response){
 		                   var rating = 0;
 		                   if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
-		                      rating = response.imdbRating;   
+		                      rating = response.imdbRating;
 		                   }
 		                   if(rating != 0){
-		                      $this.parent().find('.imdbrating').html(rating);
+		                      $this.parent().parent().find('.imdbrating').html(rating);
 		                   }
-		                   $this.parent().attr('data-rating',rating).addClass("toBeSorted");
+		                   $this.parent().parent().attr('data-rating',rating).addClass("toBeSorted");
 		                   i++;
 		                   if(i == $title.length){
 		                      sorter();
@@ -124,14 +88,47 @@ function eraseCookie(name) {
 	}
 
         function sorter(){
-	    jQuery("#sortimdb").click(function(){
-	        jQuery("#hbotable").find(".toBeSorted").sort(function(a,b){
-                    return b.dataset.rating - a.dataset.rating; 
-                }).appendTo("#hbotable");
+	    jQuery("#sortimdb").click(sort_imdb);
+	    jQuery("#sortname").click(sort_name);
+
+	    jQuery(".seen").click(function(){
+	        seen += jQuery(this).parent().find('.hbotitle').html() + ";";
+	        if(localStorage.seen!=null)localStorage.removeItem("seen");
+	        localStorage.seen=seen;
+	        jQuery(this).parent().remove();
 		make_zebra();
 	    });
-	    jQuery("#sortname").click(function(){
-	        jQuery("#hbotable").find(".hbotitle").parent().sort(function(a,b){
+
+	    jQuery("#refresh").click(function(){
+		jQuery(".toBeSorted").remove();
+		refresh();
+		return false;
+	    });
+
+	    var data = {};
+	    jQuery("#hbotable").find("tr.toBeSorted").each(function(){
+		var $this = jQuery(this);
+		var title = $this.find(".hbotitle").text();
+		var rating = $this.attr("data-rating");
+		var guid = $this.attr("data-guid");
+		data[title] = {"rating":rating,"guid":guid};
+	    });
+
+	    sort_imdb();
+	    make_zebra();
+	    if(localStorage.rating!=null)localStorage.removeItem("rating");
+	    localStorage.rating=JSON.stringify(data);
+        };
+
+	function sort_imdb(){
+  	  jQuery("#hbotable").find(".toBeSorted").sort(function(a,b){
+            return b.dataset.rating - a.dataset.rating; 
+          }).appendTo("#hbotable");
+	  make_zebra();
+	}
+
+	function sort_name(){
+	  jQuery("#hbotable").find(".hbotitle").parent().sort(function(a,b){
                     var A = a.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    var B = b.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    if (A < B){
@@ -143,35 +140,7 @@ function eraseCookie(name) {
 		    }
                 }).appendTo("#hbotable");
 		make_zebra();
-	    });
-
-	    jQuery(".seen").click(function(){
-	        seen += jQuery(this).parent().find('.hbotitle').html() + ";";
-	        if(readCookie("seen")!=null)eraseCookie("seen");
-	        createCookie("seen",seen,365);
-	        jQuery(this).parent().remove();
-		make_zebra();
-	    });
-
-	    jQuery("#refresh").click(function(){
-		jQuery(".toBeSorted").remove();
-		refresh();
-		return false;
-	    });
-
-	    var data = "";
-	    jQuery("#hbotable").find("tr").each(function(){
-		var $this = jQuery(this);
-		var title = $this.find(".hbotitle").text();
-		var rating = $this.attr("data-rating");
-		data += title+"="+rating+";";
-	    });
-
-	    make_zebra();
-
-	    if(readCookie("rating")!=null)eraseCookie("rating");
-	    createCookie("rating",data,365);
-        };
+	}
 
 	function make_zebra(){
 	  $("tr").attr("style","");
