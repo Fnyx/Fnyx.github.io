@@ -23,22 +23,31 @@ categories: hbo series
 	var series_array = [];
 
 	if(rating == null || rating == ""){
+console.log("here");
 	   refresh();
 	} else {
+console.log("there");
 	    series_array = JSON.parse(rating);
 	    create_table(series_array);
 	    sorter();
 	}
 
 	function refresh(){
+		jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>')
 		jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
 		    var series_array = {};
 		    $(data).find("item").each(function () {
 			var el = $(this);
 			var title = el.find("title").text();
 			var guid = el.find("guid").text();
+			var thumb = "";
+			el.find("media\\:thumbnail").each(function(){
+				if($(this).attr("profile") == "NORDIC-THUMB"){
+					thumb = $(this).attr("url");
+				}
+			});
 
-			series_array[title] = {"rating":null,"guid":guid};
+			series_array[title] = {"rating":null,"guid":guid,"thumb":thumb};
 		    });
 		    create_table(series_array);
 		    hboloaded();
@@ -50,7 +59,8 @@ categories: hbo series
 		   if(seen.search(title+";") == -1){
 		      var imdb = series_array[title]["rating"];
 		      var guid = series_array[title]["guid"];
-		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td><td class="seen" style="cursor:pointer">seen</td></tr>');	
+		      var thumb = series_array[title]["thumb"];
+		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><img src="'+thumb+'" class="image"><span class="seen" style="position: relative;right: 15px;top: -49px;color: red;visibility:hidden;cursor:pointer;">x</span></img><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td></tr>');	
 		   }
 		}
 	}
@@ -67,6 +77,7 @@ categories: hbo series
 			'type':'series',
 		        'r':'json'
 		    }
+		    $this.parent().parent().find('.imdbrating').html('<img src="/assets/img/ajax-loader.gif">');
 		    jQuery.get('http://www.omdbapi.com/',
 		               data,
 		               function(response){
@@ -74,13 +85,15 @@ categories: hbo series
 		                   if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
 		                      rating = response.imdbRating;
 		                   }
-		                   if(rating != 0){
-		                      $this.parent().parent().find('.imdbrating').html(rating);
-		                   }
+	
+		                   $this.parent().parent().find('.imdbrating').html(rating);
+
 		                   $this.parent().parent().attr('data-rating',rating).addClass("toBeSorted");
 		                   i++;
 		                   if(i == $title.length){
 		                      sorter();
+				      store();
+				      jQuery("#spinner").remove();
 		                   }
 		               },
 		               'json');
@@ -95,30 +108,36 @@ categories: hbo series
 	        seen += jQuery(this).parent().find('.hbotitle').html() + ";";
 	        if(localStorage.seen!=null)localStorage.removeItem("seen");
 	        localStorage.seen=seen;
-	        jQuery(this).parent().remove();
+	        jQuery(this).parents(".toBeSorted").remove();
 		make_zebra();
 	    });
 
 	    jQuery("#refresh").click(function(){
 		jQuery(".toBeSorted").remove();
 		refresh();
+		store();
 		return false;
 	    });
 
+	    jQuery(".toBeSorted").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
+
+	    sort_imdb();
+	    make_zebra();
+        };
+
+	function store(){
 	    var data = {};
 	    jQuery("#hbotable").find("tr.toBeSorted").each(function(){
 		var $this = jQuery(this);
 		var title = $this.find(".hbotitle").text();
 		var rating = $this.attr("data-rating");
 		var guid = $this.attr("data-guid");
-		data[title] = {"rating":rating,"guid":guid};
+		var thumb = $this.find("td img").attr("src");
+		data[title] = {"rating":rating,"guid":guid,"thumb":thumb};
 	    });
-
-	    sort_imdb();
-	    make_zebra();
 	    if(localStorage.rating!=null)localStorage.removeItem("rating");
 	    localStorage.rating=JSON.stringify(data);
-        };
+	}
 
 	function sort_imdb(){
   	  jQuery("#hbotable").find(".toBeSorted").sort(function(a,b){
@@ -128,7 +147,7 @@ categories: hbo series
 	}
 
 	function sort_name(){
-	  jQuery("#hbotable").find(".hbotitle").parent().sort(function(a,b){
+	  jQuery("#hbotable").find(".hbotitle").parent().parent().sort(function(a,b){
                     var A = a.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    var B = b.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    if (A < B){
@@ -156,6 +175,5 @@ categories: hbo series
   <tr>
     <td id="sortname" style="cursor:pointer">Series</td>
     <td id="sortimdb" style="cursor:pointer">Imdb</td>
-    <td></td>
   </tr>
 </table>
