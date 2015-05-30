@@ -7,6 +7,10 @@ categories: hbo series
 
 <script>
 (function() {
+	if (!("ontouchstart" in document.documentElement)) {
+		document.documentElement.className += " no-touch";
+	}
+
     var checkReady = function(callback) {
         if (window.jQuery) {
             callback(jQuery);
@@ -58,7 +62,7 @@ categories: hbo series
 		      var imdb = series_array[title]["rating"];
 		      var guid = series_array[title]["guid"];
 		      var thumb = series_array[title]["thumb"];
-		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><img src="'+thumb+'" class="image"><span class="seen" style="position: relative;right: 15px;top: -49px;color: red;visibility:hidden;cursor:pointer;">x</span></img><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td></tr>');	
+		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><img src="'+thumb+'" class="image"><span class="seen" style="position: relative;right: 15px;top: -49px;color: red;cursor:pointer;">x</span></img><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td></tr>');	
 		   }
 		}
 	}
@@ -117,7 +121,8 @@ categories: hbo series
 		return false;
 	    });
 
-	    jQuery(".toBeSorted").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
+	    jQuery(".no-touch .toBeSorted").find(".seen").css("visibility","hidden");
+	    jQuery(".no-touch .toBeSorted").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
 
 	    sort_imdb();
 	    make_zebra();
