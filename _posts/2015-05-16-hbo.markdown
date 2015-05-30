@@ -16,10 +16,17 @@ categories: hbo series
 <script>
 (function() {
 var sheet = window.document.styleSheets[0];
-sheet.insertRule(".item {width:25%;}", sheet.cssRules.length);
-sheet.insertRule("@media screen and (max-width: 1000px){.item {width:33.3%;}}", sheet.cssRules.length);
+sheet.insertRule(".item {width:20%;}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 1750px){.item {width:25%;}}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 1200px){.item {width:33.3%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 750px){.item {width:50%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 550px){.item {width:100%;}}", sheet.cssRules.length);
+
+document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
+
+sheet.insertRule(".hbo-main-container .clearfix {width:99%;margin:0 0.5%;}", sheet.cssRules.length);
+sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.length);
+
 
 	if (!("ontouchstart" in document.documentElement)) {
 		document.documentElement.className += " no-touch";
