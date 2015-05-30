@@ -16,17 +16,18 @@ categories: hbo series
 <script>
 (function() {
 var sheet = window.document.styleSheets[0];
-sheet.insertRule(".item {width:20%;}", sheet.cssRules.length);
+sheet.insertRule(".item {width:16.6%;}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 2200px){.item {width:20%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 1750px){.item {width:25%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 1200px){.item {width:33.3%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 750px){.item {width:50%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 550px){.item {width:100%;}}", sheet.cssRules.length);
-
-document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
-
 sheet.insertRule(".hbo-main-container .clearfix {width:99%;margin:0 0.5%;}", sheet.cssRules.length);
 sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 1139px){.hbo-main-container .clearfix {width:96%;margin:0 2%;}}", sheet.cssRules.length);
 
+
+document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
 
 	if (!("ontouchstart" in document.documentElement)) {
 		document.documentElement.className += " no-touch";
@@ -66,7 +67,7 @@ sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.le
 			var thumb = "";
 			el.children("media\\:thumbnail").each(function(){
 				if($(this).attr("profile") == "NORDIC-POSTER"){
-					thumb = $(this).attr("url");
+					thumb = $(this).attr("url").replace("https","http");
 				}
 			});
 
@@ -83,7 +84,7 @@ sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.le
 		      var imdb = series_array[title]["rating"];
 		      var guid = series_array[title]["guid"];
 		      var thumb = series_array[title]["thumb"];
-		      jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+' style="float:left;"><div style="position:relative"><img src="'+thumb+'" class="image" style="width:100%;"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img><div><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle" style="color: #000;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;">'+((imdb!=null)?imdb:'')+'</span></div></div></li>');	
+		      jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+' style="float:left;"><div style="position:relative"><img src="'+thumb+'" class="image" style="width:100%;"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img><div><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle" style="color: #292D32;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;color: #292D32;">'+((imdb!=null)?imdb:'')+'</span></div></div></li>');	
 		   }
 		}
 	}
