@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "HBO Nordic series!"
-date:   2015-05-20 20:09:37
+date:   2015-05-30 14:09:37
 categories: hbo series
 ---
 
@@ -23,10 +23,8 @@ categories: hbo series
 	var series_array = [];
 
 	if(rating == null || rating == ""){
-console.log("here");
 	   refresh();
 	} else {
-console.log("there");
 	    series_array = JSON.parse(rating);
 	    create_table(series_array);
 	    sorter();
@@ -41,7 +39,7 @@ console.log("there");
 			var title = el.find("title").text();
 			var guid = el.find("guid").text();
 			var thumb = "";
-			el.find("media\\:thumbnail").each(function(){
+			el.children("media\\:thumbnail").each(function(){
 				if($(this).attr("profile") == "NORDIC-THUMB"){
 					thumb = $(this).attr("url");
 				}
