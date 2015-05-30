@@ -4,9 +4,23 @@ title:  "HBO Nordic series!"
 date:   2015-05-30 14:09:37
 categories: hbo series
 ---
-
+<header>
+<style>
+@media (max-width: 600px) {
+  .facet_sidebar {
+    display: none;
+  }
+}
+</style>
+</header>
 <script>
 (function() {
+var sheet = window.document.styleSheets[0];
+sheet.insertRule(".item {width:25%;}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 1000px){.item {width:33.3%;}}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 750px){.item {width:50%;}}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 550px){.item {width:100%;}}", sheet.cssRules.length);
+
 	if (!("ontouchstart" in document.documentElement)) {
 		document.documentElement.className += " no-touch";
 	}
@@ -44,7 +58,7 @@ categories: hbo series
 			var guid = el.find("guid").text();
 			var thumb = "";
 			el.children("media\\:thumbnail").each(function(){
-				if($(this).attr("profile") == "NORDIC-THUMB"){
+				if($(this).attr("profile") == "NORDIC-POSTER"){
 					thumb = $(this).attr("url");
 				}
 			});
@@ -62,7 +76,7 @@ categories: hbo series
 		      var imdb = series_array[title]["rating"];
 		      var guid = series_array[title]["guid"];
 		      var thumb = series_array[title]["thumb"];
-		      jQuery("#hbotable").append('<tr class="toBeSorted"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+'><td><img src="'+thumb+'" class="image"><span class="seen" style="position: relative;right: 15px;top: -49px;color: red;cursor:pointer;">x</span></img><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle">'+title+'</a></td><td class="imdbrating">'+((imdb!=null)?imdb:'')+'</td></tr>');	
+		      jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+' style="float:left;"><div style="position:relative"><img src="'+thumb+'" class="image" style="width:100%;"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img><div><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle" style="color: #000;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;">'+((imdb!=null)?imdb:'')+'</span></div></div></li>');	
 		   }
 		}
 	}
@@ -83,14 +97,14 @@ categories: hbo series
 		    jQuery.get('http://www.omdbapi.com/',
 		               data,
 		               function(response){
+				   $parent = $this.parents(".item");
 		                   var rating = 0;
 		                   if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
 		                      rating = response.imdbRating;
 		                   }
 	
-		                   $this.parent().parent().find('.imdbrating').html(rating);
+		                   $parent.attr('data-rating',rating).find('.imdbrating').html(rating);
 
-		                   $this.parent().parent().attr('data-rating',rating).addClass("toBeSorted");
 		                   i++;
 		                   if(i == $title.length){
 		                      sorter();
@@ -110,19 +124,19 @@ categories: hbo series
 	        seen += jQuery(this).parent().find('.hbotitle').html() + ";";
 	        if(localStorage.seen!=null)localStorage.removeItem("seen");
 	        localStorage.seen=seen;
-	        jQuery(this).parents(".toBeSorted").remove();
+	        jQuery(this).parents(".item").remove();
 		make_zebra();
 	    });
 
 	    jQuery("#refresh").click(function(){
-		jQuery(".toBeSorted").remove();
+		jQuery(".item").remove();
 		refresh();
 		store();
 		return false;
 	    });
 
-	    jQuery(".no-touch .toBeSorted").find(".seen").css("visibility","hidden");
-	    jQuery(".no-touch .toBeSorted").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
+	    jQuery(".no-touch .item").find(".seen").css("visibility","hidden");
+	    jQuery(".no-touch .item").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
 
 	    sort_imdb();
 	    make_zebra();
@@ -130,12 +144,12 @@ categories: hbo series
 
 	function store(){
 	    var data = {};
-	    jQuery("#hbotable").find("tr.toBeSorted").each(function(){
+	    jQuery(".item").each(function(){
 		var $this = jQuery(this);
 		var title = $this.find(".hbotitle").text();
 		var rating = $this.attr("data-rating");
 		var guid = $this.attr("data-guid");
-		var thumb = $this.find("td img").attr("src");
+		var thumb = $this.find("img").attr("src");
 		data[title] = {"rating":rating,"guid":guid,"thumb":thumb};
 	    });
 	    if(localStorage.rating!=null)localStorage.removeItem("rating");
@@ -143,14 +157,14 @@ categories: hbo series
 	}
 
 	function sort_imdb(){
-  	  jQuery("#hbotable").find(".toBeSorted").sort(function(a,b){
+  	  jQuery(".item").sort(function(a,b){
             return b.dataset.rating - a.dataset.rating; 
           }).appendTo("#hbotable");
 	  make_zebra();
 	}
 
 	function sort_name(){
-	  jQuery("#hbotable").find(".hbotitle").parent().parent().sort(function(a,b){
+	  jQuery(".item").sort(function(a,b){
                     var A = a.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    var B = b.getElementsByClassName("hbotitle")[0].innerHTML.toLowerCase();
 		    if (A < B){
@@ -174,9 +188,9 @@ categories: hbo series
 
 <button id="refresh">refresh</button>
 
-<table id="hbotable" style="width:100%;margin-bottom:100px">
-  <tr>
-    <td id="sortname" style="cursor:pointer">Series</td>
-    <td id="sortimdb" style="cursor:pointer">Imdb</td>
-  </tr>
-</table>
+<ul id="hbotable" style="width:100%;padding:0;margin-bottom:100px;list-style:none">
+    <li style="float:left;width:100%">
+	<div id="sortname" style="cursor:pointer;float:left;">Series</div>
+        <div id="sortimdb" style="cursor:pointer;float:right">Imdb</div>
+    <li>
+</ul>
