@@ -24,7 +24,7 @@ sheet.insertRule("@media screen and (max-width: 750px){.item {width:50%;}}", she
 sheet.insertRule("@media screen and (max-width: 550px){.item {width:100%;}}", sheet.cssRules.length);
 sheet.insertRule(".hbo-main-container .clearfix {width:99%;margin:0 0.5%;}", sheet.cssRules.length);
 sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.length);
-sheet.insertRule("@media screen and (max-width: 1139px){.hbo-main-container .clearfix {width:96%;margin:0 2%;.post-header {width:auto;margin:0;}}}", sheet.cssRules.length);
+sheet.insertRule("@media screen and (max-width: 1139px){.hbo-main-container .clearfix {width:96%;margin:0 2%;} .post-header {width:auto;margin:0;}}", sheet.cssRules.length);
 
 
 document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
