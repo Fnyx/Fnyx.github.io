@@ -14,6 +14,7 @@ categories: hbo series
 </style>
 </header>
 <script>
+
 (function() {
 var sheet = window.document.styleSheets[0];
 sheet.insertRule(".item {width:16.6%;}", sheet.cssRules.length);
@@ -22,12 +23,13 @@ sheet.insertRule("@media screen and (max-width: 1750px){.item {width:25%;}}", sh
 sheet.insertRule("@media screen and (max-width: 1200px){.item {width:33.3%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 750px){.item {width:50%;}}", sheet.cssRules.length);
 sheet.insertRule("@media screen and (max-width: 550px){.item {width:100%;}}", sheet.cssRules.length);
-sheet.insertRule(".hbo-main-container .clearfix {width:99%;margin:0 0.5%;}", sheet.cssRules.length);
+sheet.insertRule(".hbo-main-container .clearfix {width:100%;margin:0;}", sheet.cssRules.length);
 sheet.insertRule(".post-header {width:1026px;margin:0 auto;}", sheet.cssRules.length);
-sheet.insertRule("@media screen and (max-width: 1139px){.hbo-main-container .clearfix {width:96%;margin:0 2%;} .post-header {width:auto;margin:0;}}", sheet.cssRules.length);
-
+sheet.insertRule("@media screen and (max-width: 1200px){.hbo-main-container .clearfix {width:100%;margin:0;} .post-header {width:auto;margin:0;}}", sheet.cssRules.length);
 
 document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
+
+var series_array = {};
 
 	if (!("ontouchstart" in document.documentElement)) {
 		document.documentElement.className += " no-touch";
@@ -46,57 +48,68 @@ document.getElementsByClassName("main-container")[0].className += " hbo-main-con
 	var seen = localStorage.seen;
 	if(seen==null)seen="";
 	var rating = localStorage.rating;
-	var series_array = [];
 
 	if(rating == null || rating == ""){
 	   refresh();
 	} else {
 	    series_array = JSON.parse(rating);
-	    create_table(series_array);
+	    create_table();
 	    sorter();
 	}
 
 	function refresh(){
+		series_array = {};
 		jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>')
 		jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
-		    var series_array = {};
+
 		    $(data).find("item").each(function () {
 			var el = $(this);
 			var title = el.find("title").text();
 			var guid = el.find("guid").text();
 			var thumb = "";
+			var poster = "";
+			var poster_large = "";
 			el.children("media\\:thumbnail").each(function(){
-				if($(this).attr("profile") == "NORDIC-POSTER"){
+				if($(this).attr("profile") == "NORDIC-THUMB"){
 					thumb = $(this).attr("url").replace("https","http");
+				} else if($(this).attr("profile") == "NORDIC-POSTER"){
+					poster = $(this).attr("url").replace("https","http");
+				} else if($(this).attr("profile") == "NORDIC-POSTER-LARGE"){
+					poster_large = $(this).attr("url").replace("https","http");
 				}
 			});
 
-			series_array[title] = {"rating":null,"guid":guid,"thumb":thumb};
+			series_array[title] = {"rating":null,"guid":guid,"thumb":thumb,"poster":poster,"poster_large":poster_large};
 		    });
-		    create_table(series_array);
+		    create_table();
 		    hboloaded();
 		});
 	}
 
-	function create_table(series_array){
+	function create_table(){
 		for(var title in series_array){
 		   if(seen.search(title+";") == -1){
 		      var imdb = series_array[title]["rating"];
 		      var guid = series_array[title]["guid"];
-		      var thumb = series_array[title]["thumb"];
-		      jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+' style="float:left;"><div style="position:relative"><img src="'+thumb+'" class="image" style="width:100%;"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img><div><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle" style="color: #292D32;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;color: #292D32;">'+((imdb!=null)?imdb:'')+'</span></div></div></li>');	
+		      var thumb = series_array[title]["thumb"];//224
+		      var poster = series_array[title]["poster"];//960
+		      var poster_large = series_array[title]["poster_large"];//1120
+		      jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+((guid!=null)?' data-guid="'+guid+'"':'')+' style="float:left;"><div style="position:relative"><img src="'+poster+'" sizes="(min-width: 2200px) 16.6vw, (min-width: 1750px) 20vw, (min-width: 1200px) 25vw, (min-width: 750px) 33.3vw, (min-width: 550px) 50vw, 100vw" srcset="'+thumb+' 224w, '+poster+' 960w, '+poster_large+' 1120w" class="image" style="width:100%;" width="100%"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img><div><a href="https://se.hbonordic.com/series/'+title.replace(" ","-").toLowerCase()+'/'+guid+'" class="hbotitle" style="color: #292D32;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;color: #292D32;">'+((imdb!=null)?imdb:'')+'</span></div></div></li>');	
+		   } else {
+		      series_array[title].delete;
 		   }
 		}
 	}
 
-
 	function hboloaded(){
 		var $title = jQuery('.hbotitle');
 		var i = 0;
+
 		$title.each(function(){
 		    var $this = jQuery(this);
+		    var name = $this.html().trim().replace("&amp;", "&");
 		    var data = {
-		        't':$this.html().trim().replace("&amp;", "&"),
+		        't':name,
 		        'plot':'short',
 			'type':'series',
 		        'r':'json'
@@ -110,8 +123,9 @@ document.getElementsByClassName("main-container")[0].className += " hbo-main-con
 		                   if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
 		                      rating = response.imdbRating;
 		                   }
-	
+
 		                   $parent.attr('data-rating',rating).find('.imdbrating').html(rating);
+				   series_array[name].rating = rating;
 
 		                   i++;
 		                   if(i == $title.length){
@@ -147,28 +161,17 @@ document.getElementsByClassName("main-container")[0].className += " hbo-main-con
 	    jQuery(".no-touch .item").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
 
 	    sort_imdb();
-	    make_zebra();
         };
 
 	function store(){
-	    var data = {};
-	    jQuery(".item").each(function(){
-		var $this = jQuery(this);
-		var title = $this.find(".hbotitle").text();
-		var rating = $this.attr("data-rating");
-		var guid = $this.attr("data-guid");
-		var thumb = $this.find("img").attr("src");
-		data[title] = {"rating":rating,"guid":guid,"thumb":thumb};
-	    });
 	    if(localStorage.rating!=null)localStorage.removeItem("rating");
-	    localStorage.rating=JSON.stringify(data);
+	    localStorage.rating=JSON.stringify(series_array);
 	}
 
 	function sort_imdb(){
   	  jQuery(".item").sort(function(a,b){
             return b.dataset.rating - a.dataset.rating; 
           }).appendTo("#hbotable");
-	  make_zebra();
 	}
 
 	function sort_name(){
@@ -183,12 +186,6 @@ document.getElementsByClassName("main-container")[0].className += " hbo-main-con
 		        return 0;
 		    }
                 }).appendTo("#hbotable");
-		make_zebra();
-	}
-
-	function make_zebra(){
-	  $("tr").attr("style","");
-	  $("tr:odd").attr("style","background:#ccc");
 	}
     });
 })();
