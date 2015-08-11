@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "HBO Nordic series!"
-date:   2015-08-11 14:09:37
+date:   2015-08-11 21:09:37
 categories: hbo series
 ---
 <header>
@@ -176,9 +176,8 @@ categories: hbo series
 						var bottom = top+$this.height();
 
 						if(bottom > wtop && top < wbottom){
-							$this.attr("src",$this.data("src")).removeAttr("data-src").removeClass("notLoaded").load(function(){
-								$this.parent().css({'padding-top':'0px','height':'auto'});
-								$this.attr("sizes",$this.data("sizes")).removeAttr("data-sizes").attr("srcset",$this.data("srcset")).removeAttr("data-srcset").css('position','static');
+							$this.attr("src",$this.data("src")).removeAttr("data-src").ready(function(){
+								$this.removeClass("notLoaded").attr("sizes",$this.data("sizes")).removeAttr("data-sizes").attr("srcset",$this.data("srcset")).removeAttr("data-srcset").css('position','static').parent().css({'padding-top':'0px','height':'auto'});
 							});
 						}
 					});
