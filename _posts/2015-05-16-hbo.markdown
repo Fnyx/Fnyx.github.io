@@ -28,6 +28,8 @@ categories: series
 	sheet.insertRule("@media screen and (max-width: 1200px){.hbo-main-container .clearfix {width:100%;margin:0;} .post-header {width:auto;margin:0;}}", sheet.cssRules.length);
 	sheet.insertRule("img {transition: opacity 0.5s ease-in-out;}", sheet.cssRules.length);
 	sheet.insertRule(".notLoaded {opacity: 0;}", sheet.cssRules.length);
+	sheet.insertRule("li.item:hover {transform: scale(1.1);z-index: 10; position: relative;}", sheet.cssRules.length);
+	sheet.insertRule(".seen{right: 24px; top: 15px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer; font-size:1.3em}", sheet.cssRules.length);
 
 	document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
 
@@ -38,7 +40,7 @@ categories: series
 		document.documentElement.className += " no-touch";
 	}
 
-    var checkReady = function(callback) {
+    checkReady = function(callback) {
         if (window.jQuery) {
             callback(jQuery);
         }
@@ -63,13 +65,17 @@ categories: series
 		function refresh(){
 			series_array = {};
 			jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>');
-			refreshes_going = 2;
-			refresh_via();
-			refresh_hbo();
+			
+			$('input:checked').each(function(){
+				var funcs = $(this).val();
+				var func = window[funcs];
+				func();
+			});
 		}
 		
-		function refresh_via(){
+		refresh_via = function(){
 			var pageNumber = 1;
+			refreshes_going++;
 			function via_page(pageNumber){
 				jQuery.getJSON('https://content.viaplay.se/pcdash-se/serier/samtliga?block=1&partial=1&pageNumber='+pageNumber+'&sort=highest_ratings',function(data){
 					if(data && data._embedded && data._embedded["viaplay:products"] && data._embedded["viaplay:products"].length > 0){
@@ -97,7 +103,8 @@ categories: series
 			via_page(1);
 		}
 		
-		function refresh_hbo(){
+		refresh_hbo = function(){
+			refreshes_going++;
 			jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
 
 				$(data).find("item").each(function () {
@@ -127,6 +134,29 @@ categories: series
 				}
 			});
 		}
+		
+		refresh_cmore = function(){
+			refreshes_going++;
+			var cmore = "http://www.cmore.se";
+			jQuery.get(cmore+'/serier',function(data){
+console.log(data);
+				$(data).find("#main-wrapper .results-section .item").each(function () {
+					var el;// = $(this);
+					var title;// = el.find("title.a").text();
+					var link;// = cmore+el.find(".item-link").attr("href");
+					var thumb;// = cmore+el.find(".image").attr("src");
+					var poster;// = thumb;
+					var poster_large;// = thumb;
+
+					series_array[title] = {"rating":null,"link":link,"thumb":thumb,"poster":poster,"poster_large":poster_large};
+				});
+				
+				refreshes_going--;
+				if(refreshes_going==0){
+					create_table();
+				}
+			});
+		}
 
 		function create_table(){
 			for(var title in series_array){
@@ -136,7 +166,7 @@ categories: series
 					var thumb = series_array[title]["thumb"];//224
 					var poster = series_array[title]["poster"];//960
 					var poster_large = series_array[title]["poster_large"];//1120
-					jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+' style="float:left;"><a href="'+link+'"><div style="position:relative"><div style="position:relative; width:100%; height:0; padding-top:56%;"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="'+thumb+'" data-sizes="(min-width: 2200px) 16.6vw, (min-width: 1750px) 20vw, (min-width: 1200px) 25vw, (min-width: 750px) 33.3vw, (min-width: 550px) 50vw, 100vw" data-srcset="'+thumb+' 224w, '+poster+' 960w, '+poster_large+' 1120w" class="image notLoaded" style="position:absolute; top:0; left:0; width:100%;" width="100%"><span class="seen" style="right: 15px; top: 6px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer;">x</span></img></div><div><a href="'+link+'" class="hbotitle" style="color: #292D32;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;color: #292D32;">'+((imdb!=null)?imdb:'')+'</span></div></div></a></li>');	
+					jQuery("#hbotable").append('<li class="item"'+((imdb!=null)?' data-rating="'+imdb+'"':'')+' style="float:left;"><a href="'+link+'"><div style="position:relative"><div style="position:relative; width:100%; height:0; padding-top:56%;"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="'+thumb+'" data-sizes="(min-width: 2200px) 16.6vw, (min-width: 1750px) 20vw, (min-width: 1200px) 25vw, (min-width: 750px) 33.3vw, (min-width: 550px) 50vw, 100vw" data-srcset="'+thumb+' 224w, '+poster+' 960w, '+poster_large+' 1120w" class="image notLoaded" style="position:absolute; top:0; left:0; width:100%;" width="100%"><span class="seen">x</span></img></div><div><a href="'+link+'" class="hbotitle" style="color: #292D32;text-decoration: none;margin-left:10%;width:70%;height:78px;display:block;float:left;">'+title+'</a><span class="imdbrating" style="float:right;margin-right:10%;max-width:10%;color: #292D32;">'+((imdb!=null)?imdb:'')+'</span></div></div></a></li>');	
 				} else {
 					series_array[title].delete;
 				}
@@ -287,8 +317,11 @@ categories: series
 })();
 </script>
 
+<span>Viaplay</span><input type="checkbox" value="refresh_via" name="viaplay" checked="checked">
+<span>Hbonordic</span><input type="checkbox" value="refresh_hbo" name="hbo" checked="checked">
+<!--<span>Cmore</span><input type="checkbox" value="refresh_cmore" name="cmore" checked="checked">-->
+<br>
 <button id="refresh">refresh</button>
-
 <ul id="hbotable" style="width:100%;padding:0;margin-bottom:100px;list-style:none">
     <li style="float:left;width:100%">
 	<div id="sortname" style="cursor:pointer;float:left;">Series</div>
