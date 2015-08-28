@@ -319,7 +319,6 @@ console.log(data);
 
 <span>Viaplay</span><input type="checkbox" value="refresh_via" name="viaplay" checked="checked">
 <span>Hbonordic</span><input type="checkbox" value="refresh_hbo" name="hbo" checked="checked">
-<!--<span>Cmore</span><input type="checkbox" value="refresh_cmore" name="cmore" checked="checked">-->
 <br>
 <button id="refresh">refresh</button>
 <ul id="hbotable" style="width:100%;padding:0;margin-bottom:100px;list-style:none">
