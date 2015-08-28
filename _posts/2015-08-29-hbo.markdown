@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Play-serier"
-date:   2015-08-29 21:09:37
+date:   2015-08-29 00:22:37
 categories: series
 ---
 <header>
@@ -316,11 +316,12 @@ console.log(data);
     });
 })();
 </script>
-
+<p>
 <span>Viaplay</span><input type="checkbox" value="refresh_via" name="viaplay" checked="checked">
 <span>Hbonordic</span><input type="checkbox" value="refresh_hbo" name="hbo" checked="checked">
 <br>
 <button id="refresh">refresh</button>
+</p>
 <ul id="hbotable" style="width:100%;padding:0;margin-bottom:100px;list-style:none">
     <li style="float:left;width:100%">
 	<div id="sortname" style="cursor:pointer;float:left;">Series</div>
