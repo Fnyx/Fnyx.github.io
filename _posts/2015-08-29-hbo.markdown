@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Play-serier"
-date:   2015-08-30 18:11:37
+date:   2015-08-30 18:14:37
 categories: series
 ---
 <header>
@@ -81,6 +81,7 @@ var refresh_hbo = function(){};
 			jQuery("#spinner").hide();
 			table_loaded();
 			listen_images();
+			sorter();
 		}
 
 		function refresh(){
