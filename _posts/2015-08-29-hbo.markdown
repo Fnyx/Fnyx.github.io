@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Play-serier"
-date:   2015-08-30 18:14:37
+date:   2015-08-30 20:14:37
 categories: series
 ---
 <header>
@@ -14,8 +14,6 @@ categories: series
 </style>
 </header>
 <script>
-
-var retries = 5;
 
 var series_array = {};
 var refreshes_going = 0;
@@ -59,16 +57,18 @@ var refresh_hbo = function(){};
 		var rating = localStorage.rating;
 
 		if(rating == null || rating == ""){
-		   refresh();
+			//refresh();
 		} else {
 			series_array = JSON.parse(rating);
 			create_table();
-			sorter();
+			table_loaded();
 		}
 		
 		function start_spinner(){
 			if($("#spinner").length==0){
 				jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>');
+			} else {
+				$("#spinner").show();
 			}
 			refreshes_going++;
 		}
@@ -79,9 +79,7 @@ var refresh_hbo = function(){};
 				create_table();
 			}
 			jQuery("#spinner").hide();
-			table_loaded();
-			listen_images();
-			sorter();
+			check_imdb();
 		}
 
 		function refresh(){
@@ -145,10 +143,7 @@ var refresh_hbo = function(){};
 					series_array[title] = {"rating":null,"link":link,"thumb":thumb,"poster":poster,"poster_large":poster_large};
 				});
 				
-				refreshes_going--;
-				if(refreshes_going==0){
-					create_table();
-				}
+				stop_spinner();
 			});
 		}
 		
@@ -191,57 +186,74 @@ console.log(data);
 		}
 
 		function table_loaded(){
+			load_images();
+			listen_images();
+			sorter();
+			store();
+		}
+		
+		function check_imdb(){
 			var $item = jQuery('.item:not([data-rating]):not(.running)');
-			var i = 0;
-
-			$item.each(function(){
-				jQuery("#spinner").show();
-				var $this = jQuery(this);
-				var $title = $this.find('.hbotitle');
-				var name = $title.html().trim().replace("&amp;", "&");
-
-				var data = {
-					't':name,
-					'plot':'short',
-					'type':'series',
-					'r':'json'
+			if($item.length > 0){
+				$item.each(function(){
+					jQuery("#spinner").show();
+					get_imdb(jQuery(this),5);
+				});
+			} else {
+				table_loaded();
+			}
+		}
+		
+		function get_imdb($this, retries){
+			function test_running(){
+				console.log(jQuery('.item:not([data-rating])').length);
+				if(jQuery('.item:not([data-rating])').length==0){
+					table_loaded();
+					jQuery("#spinner").hide();
 				}
-				$title.parent().parent().find('.imdbrating').html('<img src="/assets/img/ajax-loader.gif">');
-				$this.addClass('running');
-				jQuery.ajax({
-					'url':'http://www.omdbapi.com/',
-					'data':data,
-					'success':function(response){
-						$parent = $title.parents(".item");
-						var rating = 0;
-						if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
-							rating = response.imdbRating;
-						}
+			}
+			
+			$this.find('.imdbrating').html('<img src="/assets/img/ajax-loader.gif">');
+			$this.addClass('running');
+		
+			var $title = $this.find('.hbotitle');
+			var name = $title.html().trim().replace("&amp;", "&");
 
-						$parent.attr('data-rating',rating).find('.imdbrating').html(rating);
-						series_array[name].rating = rating;
-						$this.removeClass('running');
+			var data = {
+				't':name,
+				'plot':'short',
+				'type':'series',
+				'r':'json'
+			}
 
-						i++;
-						if(i == $item.length){
-							sorter();
-							store();
-							jQuery("#spinner").hide();
-						}
-					},
-					'timeout':10000,
-					'error':function(){
-						retries--;
-						if(retries >= 0){
-							store();
-							$this.removeClass('running');
-							table_loaded();
-						} else {
-							location.reload();
-						}
-					},
-					'dataType':'json'
-					});
+			jQuery.ajax({
+				'url':'http://www.omdbapi.com/',
+				'data':data,
+				'success':function(response){
+					var imdb_rating = 0;
+					if(response.Response == "True" && jQuery.isNumeric(response.imdbRating)){
+						imdb_rating = response.imdbRating;
+					}
+
+					$this.attr('data-rating',imdb_rating).find('.imdbrating').html(imdb_rating);
+					series_array[name].rating = imdb_rating;
+					$this.removeClass('running');
+					test_running();
+				},
+				'timeout':10000,
+				'error':function(){
+					retries--;
+					$this.removeClass('running');
+					store();
+					if(retries > 0){
+						get_imdb($this, retries);
+					} else {
+						$this.attr('data-rating',0).find('.imdbrating').html(0);
+						series_array[name].rating = 0;
+						test_running();
+					}
+				},
+				'dataType':'json'
 			});
 		}
 		
@@ -299,6 +311,7 @@ console.log(data);
 		}
 
 		function sort_imdb(){
+		console.log("sorting");
 			jQuery(".item").sort(function(a,b){
 				return b.dataset.rating - a.dataset.rating; 
 			}).appendTo("#hbotable");
