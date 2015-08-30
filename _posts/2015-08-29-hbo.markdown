@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Play-serier"
-date:   2015-08-30 17:55:37
+date:   2015-08-30 18:11:37
 categories: series
 ---
 <header>
@@ -286,13 +286,6 @@ console.log(data);
 				e.preventDefault();
 			});
 
-			jQuery("#refresh").click(function(){
-				jQuery(".item").remove();
-				refresh();
-				store();
-				return false;
-			});
-
 			jQuery(".no-touch .item").find(".seen").css("visibility","hidden");
 			jQuery(".no-touch .item").hover(function(){$(this).find(".seen").css("visibility","visible");},function(){$(this).find(".seen").css("visibility","hidden");});
 
@@ -325,6 +318,13 @@ console.log(data);
 			}).appendTo("#hbotable");
 			load_images();
 		}
+		
+		jQuery("#refresh").click(function(){
+			jQuery(".item").remove();
+			refresh();
+			store();
+			return false;
+		});
     });
 })();
 </script>
