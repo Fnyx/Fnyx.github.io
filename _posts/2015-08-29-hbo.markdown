@@ -15,6 +15,13 @@ categories: series
 </header>
 <script>
 
+var retries = 5;
+
+var series_array = {};
+var refreshes_going = 0;
+var refresh_via = function(){};
+var refresh_hbo = function(){};
+
 (function() {
 	var sheet = window.document.styleSheets[0];
 	sheet.insertRule(".item {width:16.6%;}", sheet.cssRules.length);
@@ -32,9 +39,6 @@ categories: series
 	sheet.insertRule(".seen{right: 24px; top: 15px; color: red; cursor: pointer; position: absolute; color: red;cursor:pointer; font-size:1.3em}", sheet.cssRules.length);
 
 	document.getElementsByClassName("main-container")[0].className += " hbo-main-container";
-
-	var series_array = {};
-	var refreshes_going = 0;
 
 	if (!("ontouchstart" in document.documentElement)) {
 		document.documentElement.className += " no-touch";
@@ -61,11 +65,26 @@ categories: series
 			create_table();
 			sorter();
 		}
+		
+		function start_spinner(){
+			if($("#spinner").length==0){
+				jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>');
+			}
+			refreshes_going++;
+		}
+		
+		function stop_spinner(){
+			refreshes_going--;
+			if(refreshes_going==0){
+				create_table();
+			}
+			jQuery("#spinner").hide();
+			table_loaded();
+			listen_images();
+		}
 
 		function refresh(){
 			series_array = {};
-			jQuery("body").append('<div id="spinner" style="position:fixed;padding:0;margin:0;top:0;left:0;width: 100%;height: 100%;background:rgba(255,255,255,0.5);"><img src="/assets/img/ajax-loader.gif" style="position:absolute;left:0;top:0;right:0;bottom:0;margin:auto;"></div>');
-			
 			$('input:checked').each(function(){
 				var funcs = $(this).val();
 				var func = window[funcs];
@@ -75,7 +94,7 @@ categories: series
 		
 		refresh_via = function(){
 			var pageNumber = 1;
-			refreshes_going++;
+			start_spinner();
 			function via_page(pageNumber){
 				jQuery.getJSON('https://content.viaplay.se/pcdash-se/serier/samtliga?block=1&partial=1&pageNumber='+pageNumber+'&sort=highest_ratings',function(data){
 					if(data && data._embedded && data._embedded["viaplay:products"] && data._embedded["viaplay:products"].length > 0){
@@ -93,10 +112,7 @@ categories: series
 					
 						via_page(pageNumber+1);
 					} else {
-						refreshes_going--;
-						if(refreshes_going==0){
-							create_table();
-						}
+						stop_spinner();
 					}
 				});
 			}
@@ -104,7 +120,7 @@ categories: series
 		}
 		
 		refresh_hbo = function(){
-			refreshes_going++;
+			start_spinner();
 			jQuery.get('https://api-hbon.hbo.clearleap.com/cloffice/client/web/browse/f5dde064-495d-41dc-8cd7-cbb76baaf8d0',function(data){
 
 				$(data).find("item").each(function () {
@@ -171,15 +187,11 @@ console.log(data);
 					series_array[title].delete;
 				}
 			}
-			jQuery("#spinner").hide();
-			hboloaded();
-			listen_images();
 		}
 
-		function hboloaded(){
+		function table_loaded(){
 			var $item = jQuery('.item:not([data-rating]):not(.running)');
 			var i = 0;
-			var retries = 5;
 
 			$item.each(function(){
 				jQuery("#spinner").show();
@@ -222,7 +234,7 @@ console.log(data);
 						if(retries >= 0){
 							store();
 							$this.removeClass('running');
-							hboloaded();
+							table_loaded();
 						} else {
 							location.reload();
 						}
